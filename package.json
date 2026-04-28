@@ -1,0 +1,28 @@
+{
+  "name": "project-ryhma9",
+  "version": "1.0.0",
+  "description": "This project is a Node.js backend application for managing appointment bookings. Users can register, log in and book available time slots. Admin users can create and manage appointment slots.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hannahanate/node-project-ryhma9.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hannahanate/node-project-ryhma9/issues"
+  },
+  "homepage": "https://github.com/hannahanate/node-project-ryhma9#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.5.0"
+  }
+}
