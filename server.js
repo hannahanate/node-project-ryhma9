@@ -19,10 +19,9 @@ app.listen(PORT, () => {
 
 const DBUSER = process.env.DBUSER;
 const DBPASSWORD = process.env.DBPASSWORD;
-const CLUSTERNAME = process.env.CLUSTERNAME;
-const APPNAME = process.env.APPNAME;
 
-const URI = `mongodb+srv://${DBUSER}:${DBPASSWORD}@${CLUSTERNAME}.pjm9jvj.mongodb.net/?appName=${APPNAME}`;
+const URI = `mongodb+srv://${DBUSER}:${DBPASSWORD}@node-project.7lsqvu9.mongodb.net/?appName=node-project`;
+
 
 mongoose.connect(URI)
 .then((result) => console.log("Connected to DB"))
