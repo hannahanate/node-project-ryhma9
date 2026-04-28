@@ -4,8 +4,8 @@
   "description": "This project is a Node.js backend app for managing appointment bookings. Users can register, log in and book available time slots. Admin users can create and manage appointment slots.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "dev": "nodemon node-project-ryhma9",
+    "start": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -23,9 +23,10 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.2.0",
     "mongoose": "^9.5.0"
   },
-  "scripts": {
-  "start": "nodemon server.js"
-}
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }
