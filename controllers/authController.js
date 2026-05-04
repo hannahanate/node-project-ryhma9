@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
@@ -56,7 +56,14 @@ exports.login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ token });
+    return res.status(200).json({
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                role: user.role
+            }
+        });
 
   } catch (err) {
     console.log(err);

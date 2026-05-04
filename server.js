@@ -20,6 +20,10 @@ const authRoutes = require("./routes/authRoutes");
 //use auth routes with base path /api/auth
 app.use("/api/auth", authRoutes);
 
+// use slots
+
+app.use("/api/slots", require("./routes/slots"));
+
 // Mongodb connection
 
 const DBUSER = process.env.DBUSER;
