@@ -15,6 +15,11 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+// import authentication routes, login & register endpoints
+const authRoutes = require("./routes/authRoutes");
+//use auth routes with base path /api/auth
+app.use("/api/auth", authRoutes);
+
 // Mongodb connection
 
 const DBUSER = process.env.DBUSER;
