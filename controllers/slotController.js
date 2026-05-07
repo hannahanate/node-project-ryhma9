@@ -1,5 +1,11 @@
 const Slot = require("../models/Slot");
 
+// helper for date and time validation
+function isValidISODate(dateString) {
+    const date = new Date(dateString);
+
+    return !isNaN(date.getTime());
+}
 
 // Create a new slot
 exports.createSlot = async (req, res) => {
@@ -10,14 +16,35 @@ exports.createSlot = async (req, res) => {
             return res.status(400).json({ message: "Missing start/end" });
         }
 
-        const slot = await Slot.create({ start, end });
+        // check the time format from startdate and end-date
+        if (!isValidISODate(start) || !isValidISODate(end)) {
+            return res.status(400).json({
+                message: "Invalid date format"
+            });
+        }
+
+        // transform to date objects
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        // check if ending time is given after the start
+        if (endDate <= startDate) {
+            return res.status(400).json({
+                message: "End time must be after start time"
+            });
+        }
+
+        const slot = await Slot.create({
+            start: startDate,
+            end: endDate
+        });
+
 
         res.status(201).json(slot);
     } catch (err) {
         res.status(500).json({ message: "Server error" });
     }
 };
-
 
 // Update the start / end time of created slot
 exports.updateSlot = async (req, res) => {
@@ -65,7 +92,6 @@ exports.getSlot = async (req, res) => {
     }
 };
 
-
 // Get all slots
 exports.getSlots = async (req, res) => {
     try {
@@ -76,7 +102,6 @@ exports.getSlots = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
-
 
 // Delete slot by ID
 exports.deleteSlot = async (req, res) => {
