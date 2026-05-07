@@ -5,6 +5,11 @@ exports.createAppointment = async (req, res) => {
   try {
     const { slotId, serviceId } = req.body;
 
+    // validate required fields
+    if (!slotId || !serviceId) {
+      return res.status(400).json({ message: "Missing slotId or serviceId" });
+    }
+
     //find slot
     const slot = await Slot.findById(slotId);
 
