@@ -3,7 +3,7 @@ const Appointment = require("../models/Appointment");
 
 exports.createAppointment = async (req, res) => {
   try {
-    const { slotId } = req.body;
+    const { slotId, serviceId } = req.body;
 
     //find slot
     const slot = await Slot.findById(slotId);
@@ -25,6 +25,7 @@ exports.createAppointment = async (req, res) => {
     //creates an appointment
     const appointment = new Appointment({
       slot: slotId,
+      service: serviceId,
       user: req.user.userId
     });
 
@@ -37,6 +38,7 @@ exports.createAppointment = async (req, res) => {
     res.status(201).json(appointment);
 
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       message: "Server error"
     });

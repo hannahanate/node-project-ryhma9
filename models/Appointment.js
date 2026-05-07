@@ -15,7 +15,7 @@ const appointmentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Slot",
     required: true
-  },    
+  },
   status: {
     type: String,
     enum: ["pending", "confirmed", "cancelled"],

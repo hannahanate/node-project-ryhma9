@@ -11,7 +11,10 @@ const {
     getMyAppointments,
 } = require("../controllers/appController");
 
-// get all appointments for the logged-in user
+// create new appointment
+router.post("/", auth, createAppointment);
+
+// get all appointments for the authorized user
 router.get("/me", auth, getMyAppointments);
 
 module.exports = router;
