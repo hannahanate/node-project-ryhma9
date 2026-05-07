@@ -7,5 +7,11 @@ const {
     createAppointment,
     getAppointments,
     getAppointment,
-    cancelAppointment
+    cancelAppointment,
+    getMyAppointments,
 } = require("../controllers/appController");
+
+// get all appointments for the logged-in user
+router.get("/me", auth, getMyAppointments);
+
+module.exports = router;

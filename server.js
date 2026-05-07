@@ -24,6 +24,9 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/slots", require("./routes/slots"));
 
+// use appointments
+app.use("/api/appointments", require("./routes/appRoutes"));
+
 // Mongodb connection
 
 const DBUSER = process.env.DBUSER;

@@ -42,3 +42,17 @@ exports.createAppointment = async (req, res) => {
     });
   }
 };
+
+// Get all appointments for the logged-in user
+exports.getMyAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({ user: req.user.userId })
+      .populate("slot")
+      .populate("service");
+
+    res.status(200).json(appointments);
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
