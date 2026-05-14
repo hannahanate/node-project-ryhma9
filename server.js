@@ -6,7 +6,8 @@ require ('dotenv').config();
 const mongoSanitize = require("express-mongo-sanitize");
 
 app.use(express.json());
-app.use(mongoSanitize());
+app.use(express.static("public"));
+// app.use(mongoSanitize());
 
 app.get("/", (req, res) => {
   res.send("API is running");

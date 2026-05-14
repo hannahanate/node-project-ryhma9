@@ -15,6 +15,6 @@ const {
 router.post("/", auth, createAppointment);
 
 // get all appointments for the authorized user
-router.get("/me", auth, getMyAppointments);
+router.get("/my", auth, getMyAppointments);
 
 module.exports = router;

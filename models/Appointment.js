@@ -9,7 +9,7 @@ const appointmentSchema = new mongoose.Schema({
   service: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Service",
-    required: true
+    required: false
   },
   slot: {
     type: mongoose.Schema.Types.ObjectId,

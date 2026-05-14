@@ -3,10 +3,10 @@ const Appointment = require("../models/Appointment");
 
 exports.createAppointment = async (req, res) => {
   try {
-    const { slotId, serviceId } = req.body;
+    const { slotId } = req.body;
 
     // validate required fields
-    if (!slotId || !serviceId) {
+    if (!slotId) {
       return res.status(400).json({ message: "Missing slotId or serviceId" });
     }
 
@@ -30,7 +30,6 @@ exports.createAppointment = async (req, res) => {
     //creates an appointment
     const appointment = new Appointment({
       slot: slotId,
-      service: serviceId,
       user: req.user.userId
     });
 
@@ -54,8 +53,7 @@ exports.createAppointment = async (req, res) => {
 exports.getMyAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({ user: req.user.userId })
-      .populate("slot")
-      .populate("service");
+      .populate("slot");
 
     res.status(200).json(appointments);
 

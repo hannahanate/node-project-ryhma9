@@ -16,10 +16,10 @@ router.put("/:id", auth, authorize("admin"), updateSlot);
 router.delete("/:id", auth, authorize("admin"), deleteSlot);
 
 // get one created timeslot with ID
-router.get("/:id", auth, authorize("admin"), getSlot);
+router.get("/:id", getSlot);
 
 // get all the timeslots
-router.get("/", auth, authorize("admin"), getSlots);
+router.get("/", getSlots);
 
 module.exports = router;
 

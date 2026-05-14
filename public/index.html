@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<title>Ajanvarausjärjestelmä</title>
+<style>
+    body {
+        font-family: Arial;
+        background-color: pink;
+        max-width: 800px;
+        margin: 20px auto;
+    }
+
+    .box {
+        border: 2px solid black;
+        padding: 40px;
+        margin-bottom: 15px; 
+    }
+
+    input, button, select {
+        max-width: 100%;
+        padding: 10px;
+        margin: 5px 0; }
+
+    .hidden {
+        display: none; 
+    }
+
+</style>
+</head>
+<body>
+
+<h1>Ajanvarausjärjestelmä</h1>
+
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+  <h2>Kirjaudu</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Kirjaudu</button>
+
+  <h3>tai rekisteröidy</h3>
+  <input id="regName" placeholder="Nimi">
+  <input id="regEmail" placeholder="Email">
+  <input id="regPassword" type="password" placeholder="Password">
+  <button onclick="register()">Rekisteröidy</button>
+
+  <p id="msg"></p>
+</div>
+
+<!-- ADMIN -->
+<div class="box hidden" id="adminBox">
+  <h2>Admin - Luo slotti</h2>
+  <input id="start" type="datetime-local">
+  <input id="end" type="datetime-local">
+  <button onclick="createSlot()">Luo slotti</button>
+</div>
+
+<!-- SLOTS -->
+<div class="box">
+  <h2>Vapaat ajat</h2>
+  <select id="slots"></select>
+  <button onclick="book()">Varaa aika</button>
+</div>
+
+<!-- MY BOOKINGS -->
+<div class="box">
+  <h2>Omat varaukset</h2>
+  <button onclick="loadMyAppointments()">Päivitä</button>
+  <ul id="myBookings"></ul>
+</div>
+
+<!-- LOGOUT -->
+<div class="box">
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+const API = "/api";
+
+let token = null;
+let user = null;
+
+// ---------------- LOGIN ----------------
+async function login() {
+  const res = await fetch(`${API}/auth/login`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      email: email.value,
+      password: password.value
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    msg.textContent = data.message;
+    return;
+  }
+
+  token = data.token;
+  user = data.user;
+
+  msg.textContent = "Kirjautuminen ok";
+
+  document.getElementById("loginBox").classList.add("hidden");
+
+  if (user.role === "admin") {
+    document.getElementById("adminBox").classList.remove("hidden");
+  }
+
+  loadSlots();
+  loadMyAppointments();
+}
+
+// ---------------- REGISTER ----------------
+async function register() {
+  const res = await fetch(`${API}/auth/register`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      name: regName.value,
+      email: regEmail.value,
+      password: regPassword.value
+    })
+  });
+
+  const data = await res.json();
+  msg.textContent = data.message;
+}
+
+// ---------------- FORMAT ----------------
+function format(t) {
+  return new Date(t).toLocaleString("fi-FI");
+}
+
+// ---------------- LOAD SLOTS ----------------
+async function loadSlots() {
+  const res = await fetch(`${API}/slots`);
+  const slots = await res.json();
+
+  const sel = document.getElementById("slots");
+  sel.innerHTML = "";
+
+  slots.filter(s => !s.isBooked).forEach(slot => {
+    const opt = document.createElement("option");
+    opt.value = slot._id;
+    opt.textContent = `${format(slot.start)} - ${format(slot.end)}`;
+    sel.appendChild(opt);
+  });
+}
+
+// ---------------- BOOK ----------------
+async function book() {
+  const slotId = slots.value;
+
+  const res = await fetch(`${API}/appointments`, {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${token}`
+    },
+    body: JSON.stringify({ slotId })
+  });
+
+  const data = await res.json();
+  alert(data.message || "Varattu");
+
+  loadSlots();
+  loadMyAppointments();
+}
+
+// ---------------- CREATE SLOT (ADMIN) ----------------
+async function createSlot() {
+  const res = await fetch(`${API}/slots`, {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${token}`
+    },
+    body: JSON.stringify({
+      start: new Date(start.value).toISOString(),
+      end: new Date(end.value).toISOString()
+    })
+  });
+
+  const data = await res.json();
+  alert(data.message || "Slotti luotu");
+
+  loadSlots();
+}
+
+// ---------------- MY APPOINTMENTS ----------------
+async function loadMyAppointments() {
+  try {
+    const res = await fetch(`${API}/appointments/my`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    console.log("RAW RESPONSE:", data);
+
+    const list = document.getElementById("myBookings");
+    list.innerHTML = "";
+
+    if (!Array.isArray(data)) {
+      list.innerHTML = "<li>Ei varauksia tai virhe</li>";
+      return;
+    }
+
+    data.forEach(a => {
+      if (!a.slot) return;
+
+      const li = document.createElement("li");
+      li.textContent = `${format(a.slot.start)} - ${format(a.slot.end)}`;
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// ---------------- LOGOUT ----------------
+function logout() {
+  token = null;
+  user = null;
+  location.reload();
+}
+
+// INIT
+loadSlots();
+</script>
+
+</body>
+</html>
