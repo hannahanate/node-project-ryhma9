@@ -56,22 +56,22 @@
   <input id="end" type="datetime-local">
   <button onclick="createSlot()">Luo slotti</button>
   <!-- <button onclick="createDemoSlots()">Luo demoslottteja</button> -->
-</button>
+  <h2>Kaikki varaukset ja varausten hallinta</h2>
+  <button onclick="loadAllAppointments()">
+    Näytä varaukset </button>
+    <ul id="allAppointments"></ul>
+
 </div>
 
-<h2>Kaikki varaukset</h2>
-
-<button onclick="loadAllAppointments()">
-  Näytä varaukset
-</button>
-
-<ul id="allAppointments"></ul>
 
 <!-- SLOTS -->
 <div class="box hidden" id="slotsBox">
   <h2>Vapaat ajat</h2>
   <select id="slots"></select>
   <button onclick="book()">Varaa aika</button>
+  <button id="deleteSlotBtn" class="hidden" onclick="deleteSelectedSlot()">
+  Poista aika
+</button>
 </div>
 
 <!-- MY BOOKINGS -->
@@ -130,6 +130,9 @@ async function login() {
     .classList.remove("hidden");
     loadMyAppointments();
   }
+
+  document.getElementById("deleteSlotBtn")
+  .classList.remove("hidden");
 
   document.getElementById("logoutBox")
     .classList.remove("hidden");
@@ -264,17 +267,45 @@ async function loadMyAppointments() {
       return;
     }
 
-    data.forEach(a => {
-      if (!a.slot) return;
+  data.forEach(a => {
+    if (!a.slot) return;
+    const li = document.createElement("li");
+    li.innerHTML = `
+    ${format(a.slot.start)} - ${format(a.slot.end)}
+    <button onclick="deleteAppointment('${a._id}')">
+      Peruuta
+    </button>
+  `;
 
-      const li = document.createElement("li");
-      li.textContent = `${format(a.slot.start)} - ${format(a.slot.end)}`;
-      list.appendChild(li);
-    });
+  list.appendChild(li);
+});
 
   } catch (err) {
     console.error(err);
   }
+}
+
+// ---------------- DELETE AN APPOINTMENT ----------------
+async function deleteAppointment(id) {
+
+  const confirmDelete =
+    confirm("Peruutetaanko varaus?");
+
+  if (!confirmDelete) return;
+
+  const res = await fetch(`${API}/appointments/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  alert(data.message);
+
+  loadMyAppointments();
+  loadSlots();
 }
 
 // ---------------- LOGOUT ----------------
@@ -316,6 +347,31 @@ async function createDemoSlots() {
   loadSlots();
 }
 
+// ---------------- DELETE SELECTED SLOT ----------------
+async function deleteSelectedSlot() {
+
+  const slotId =
+    document.getElementById("slots").value;
+
+  const confirmDelete =
+    confirm("Poistetaanko aika?");
+
+  if (!confirmDelete) return;
+
+  const res = await fetch(`${API}/slots/${slotId}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  alert(data.message);
+
+  loadSlots();
+}
+
 // ---------------- ADMIN ALL APPOINTMENTS ----------------
 async function loadAllAppointments() {
 
@@ -336,10 +392,13 @@ async function loadAllAppointments() {
 
     const li = document.createElement("li");
 
-    li.textContent =
-      `${appointment.user.name} | 
-       ${format(appointment.slot.start)} - 
-       ${format(appointment.slot.end)}`;
+    li.innerHTML = `
+      ${appointment.user.name} |
+      ${format(appointment.slot.start)} -
+      ${format(appointment.slot.end)}
+
+    <button onclick="deleteAppointment('${appointment._id}')"> Peruuta aika </button>
+    `;
 
     list.appendChild(li);
   });
