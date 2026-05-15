@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const auth = require("../middleware/auth");
+const authorize = require("../middleware/authorize");
 
 const {
     createAppointment,
@@ -9,6 +10,7 @@ const {
     getAppointment,
     cancelAppointment,
     getMyAppointments,
+    getAllAppointments,
 } = require("../controllers/appController");
 
 // create new appointment
@@ -18,3 +20,11 @@ router.post("/", auth, createAppointment);
 router.get("/my", auth, getMyAppointments);
 
 module.exports = router;
+
+// Admin: get all appointments
+router.get(
+  "/all",
+  auth,
+  authorize("admin"),
+  getAllAppointments
+);

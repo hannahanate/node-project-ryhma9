@@ -14,7 +14,8 @@
     .box {
         border: 2px solid black;
         padding: 40px;
-        margin-bottom: 15px; 
+        margin-bottom: 15px;
+        background: white; 
     }
 
     input, button, select {
@@ -54,24 +55,34 @@
   <input id="start" type="datetime-local">
   <input id="end" type="datetime-local">
   <button onclick="createSlot()">Luo slotti</button>
+  <!-- <button onclick="createDemoSlots()">Luo demoslottteja</button> -->
+</button>
 </div>
 
+<h2>Kaikki varaukset</h2>
+
+<button onclick="loadAllAppointments()">
+  Näytä varaukset
+</button>
+
+<ul id="allAppointments"></ul>
+
 <!-- SLOTS -->
-<div class="box">
+<div class="box hidden" id="slotsBox">
   <h2>Vapaat ajat</h2>
   <select id="slots"></select>
   <button onclick="book()">Varaa aika</button>
 </div>
 
 <!-- MY BOOKINGS -->
-<div class="box">
+<div class="box hidden" id="bookingsBox">
   <h2>Omat varaukset</h2>
   <button onclick="loadMyAppointments()">Päivitä</button>
   <ul id="myBookings"></ul>
 </div>
 
 <!-- LOGOUT -->
-<div class="box">
+<div class="box hidden" id="logoutBox">
   <button onclick="logout()">Logout</button>
 </div>
 
@@ -102,16 +113,36 @@ async function login() {
   token = data.token;
   user = data.user;
 
-  msg.textContent = "Kirjautuminen ok";
+  msg.textContent = "Kirjautuminen onnistui!";
 
-  document.getElementById("loginBox").classList.add("hidden");
+  // hide login
+  document.getElementById("loginBox")
+    .classList.add("hidden");
+
+  // show user content
+  document.getElementById("slotsBox")
+    .classList.remove("hidden");
+  
+  // show own bookings only for normal users
+  if (user.role !== "admin") {
+
+  document.getElementById("bookingsBox")
+    .classList.remove("hidden");
+    loadMyAppointments();
+  }
+
+  document.getElementById("logoutBox")
+    .classList.remove("hidden");
+
+  //document.getElementById("loginBox").classList.add("hidden");
 
   if (user.role === "admin") {
-    document.getElementById("adminBox").classList.remove("hidden");
+    document.getElementById("adminBox")
+    .classList.remove("hidden");
   }
 
   loadSlots();
-  loadMyAppointments();
+  //loadMyAppointments();
 }
 
 // ---------------- REGISTER ----------------
@@ -128,6 +159,11 @@ async function register() {
 
   const data = await res.json();
   msg.textContent = data.message;
+
+  // clear registration fields
+  regName.value = "";
+  regEmail.value = "";
+  regPassword.value = "";
 }
 
 // ---------------- FORMAT ----------------
@@ -140,20 +176,35 @@ async function loadSlots() {
   const res = await fetch(`${API}/slots`);
   const slots = await res.json();
 
-  const sel = document.getElementById("slots");
-  sel.innerHTML = "";
+  const select = document.getElementById("slots");
+  select.innerHTML = "";
 
-  slots.filter(s => !s.isBooked).forEach(slot => {
-    const opt = document.createElement("option");
-    opt.value = slot._id;
-    opt.textContent = `${format(slot.start)} - ${format(slot.end)}`;
-    sel.appendChild(opt);
-  });
+  if (slots.length === 0) {
+    const option = document.createElement("option");
+    option.textContent = "Ei vapaita aikoja";
+    option.disabled = true;
+    select.appendChild(option);
+    return;
+  }
+ 
+  slots
+    .filter(slot => !slot.isBooked)
+    .forEach(slot => {
+
+      const option = document.createElement("option");
+
+      option.value = slot._id;
+
+      option.textContent =
+        `${format(slot.start)} - ${format(slot.end)}`;
+
+      select.appendChild(option);
+    });
 }
 
 // ---------------- BOOK ----------------
 async function book() {
-  const slotId = slots.value;
+  const slotId = document.getElementById("slots").value;
 
   const res = await fetch(`${API}/appointments`, {
     method: "POST",
@@ -231,6 +282,67 @@ function logout() {
   token = null;
   user = null;
   location.reload();
+}
+
+// ---------------- CREATE DEMO SLOTS ----------------
+async function createDemoSlots() {
+
+  const now = new Date();
+
+  for (let i = 1; i <= 5; i++) {
+
+    const start = new Date(now);
+    start.setDate(now.getDate() + i);
+    start.setHours(10, 0, 0);
+
+    const end = new Date(start);
+    end.setHours(11, 0, 0);
+
+    await fetch(`${API}/slots`, {
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        start: start.toISOString(),
+        end: end.toISOString()
+      })
+    });
+  }
+
+  alert("Demoslotit luotu");
+
+  loadSlots();
+}
+
+// ---------------- ADMIN ALL APPOINTMENTS ----------------
+async function loadAllAppointments() {
+
+  const res = await fetch(`${API}/appointments/all`, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type":"application/json"
+    }
+  });
+
+  const data = await res.json();
+
+  const list = document.getElementById("allAppointments");
+
+  list.innerHTML = "";
+
+  data.forEach(appointment => {
+
+    const li = document.createElement("li");
+
+    li.textContent =
+      `${appointment.user.name} | 
+       ${format(appointment.slot.start)} - 
+       ${format(appointment.slot.end)}`;
+
+    list.appendChild(li);
+  });
 }
 
 // INIT

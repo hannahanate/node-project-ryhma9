@@ -6,11 +6,6 @@ const appointmentSchema = new mongoose.Schema({
     ref: "User",
     required: true
   },
-  service: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Service",
-    required: false
-  },
   slot: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Slot",

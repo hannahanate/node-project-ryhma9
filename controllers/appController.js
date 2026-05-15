@@ -7,7 +7,7 @@ exports.createAppointment = async (req, res) => {
 
     // validate required fields
     if (!slotId) {
-      return res.status(400).json({ message: "Missing slotId or serviceId" });
+      return res.status(400).json({ message: "Missing slotId" });
     }
 
     //find slot
@@ -59,5 +59,24 @@ exports.getMyAppointments = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get all appointments (admin)
+exports.getAllAppointments = async (req, res) => {
+
+  try {
+
+    const appointments = await Appointment.find()
+      .populate("user")
+      .populate("slot");
+
+    res.status(200).json(appointments);
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: "Server error"
+    });
   }
 };
