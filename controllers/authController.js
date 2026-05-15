@@ -5,6 +5,27 @@ const jwt = require("jsonwebtoken");
 exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
+  // validate required fields
+if (!name || !email || !password) {
+  return res.status(400).json({
+    message: "All fields are required"
+  });
+}
+
+// basic email validation
+if (!email.includes("@")) {
+  return res.status(400).json({
+    message: "Invalid email"
+  });
+}
+
+// password minimum length
+if (password.length < 6) {
+  return res.status(400).json({
+    message: "Password must be at least 6 characters"
+  });
+}
+
   try {
     // check if user already exists
     const existingUser = await User.findOne({ email });
@@ -36,6 +57,13 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+
+  // validate login fields
+if (!email || !password) {
+  return res.status(400).json({
+    message: "Email and password required"
+  });
+}
 
   try {
     //find the user
