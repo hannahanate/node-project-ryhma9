@@ -1,39 +1,50 @@
 const express = require("express");
-const app = express();
 const mongoose = require("mongoose");
+const mongoSanitize = require("express-mongo-sanitize");
+const path = require("path");
+
 require ('dotenv').config();
 
-const mongoSanitize = require("express-mongo-sanitize");
-
-app.use(express.json());
-app.use(express.static("public"));
-// app.use(mongoSanitize());
-
-app.get("/", (req, res) => {
-  res.send("API is running");
-});
-
+const app = express();
 const PORT = 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+/// MIDDLEWARE
+//Parse json request bodies
+app.use(express.json());
+// Prevent mongoDB operator injection !! Disabled temporarily cos of compatibility issues 
+//app.use(mongoSanitize());
+//get frontend files from public folder
+app.use(express.static(path.join(__dirname, "public")));
+// app.use(mongoSanitize());
 
-// import authentication routes, login & register endpoints
+
+///Route imports
+//import authentication routes, login & register endpoints
 const authRoutes = require("./routes/authRoutes");
+//routes for slot management
+const slotRoutes = require("./routes/slots");
+//routes for appointment management
+const appointmentRoutes = require("./routes/appRoutes");
+
+///API routes
 //use auth routes with base path /api/auth
 app.use("/api/auth", authRoutes);
+// Slot routes
+app.use("/api/slots", slotRoutes);
+// Appointment routes
+app.use("/api/appointments", appointmentRoutes);
 
-// use slots
 
-app.use("/api/slots", require("./routes/slots"));
+///Default route to frontend
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
-// use appointments
-app.use("/api/appointments", require("./routes/appRoutes"));
-
-// handle unknown routes
+/// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  res.status(404).json({
+    message: "Route not found"
+  });
 });
 
 // global error handler
@@ -52,13 +63,22 @@ app.use((err, req, res, next) => {
 });
 
 // Mongodb connection
-
 const DBUSER = process.env.DBUSER;
 const DBPASSWORD = process.env.DBPASSWORD;
 
 const URI = `mongodb+srv://${DBUSER}:${DBPASSWORD}@node-project.7lsqvu9.mongodb.net/?appName=node-project`;
 
 
+///start server after DB connection
 mongoose.connect(URI)
-.then((result) => console.log("Connected to DB"))
-.catch((err) => console.log(err))
+  .then(() => {
+    console.log("Connected to DB");
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
