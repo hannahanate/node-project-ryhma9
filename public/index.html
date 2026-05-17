@@ -306,6 +306,10 @@ async function deleteAppointment(id) {
 
   loadMyAppointments();
   loadSlots();
+
+  if (user.role === "admin") {
+  loadAllAppointments();
+}
 }
 
 // ---------------- LOGOUT ----------------

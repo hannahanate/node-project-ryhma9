@@ -92,9 +92,13 @@ exports.deleteAppointment = async (req, res) => {
     }
 
     // check that user owns this appointment
-    if (appointment.user.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
+    if (appointment.user.toString() !== req.user.userId &&
+    req.user.role !== "admin"
+    ) {
+    return res.status(403).json({
+    message: "Not authorized"
+    });
+  }
 
     // free the slot
     const slot = await Slot.findById(appointment.slot);
